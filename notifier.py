@@ -45,7 +45,6 @@ def get_puppies(url, puppy_dict):
         return
 
     soup = BeautifulSoup(res.content, 'html.parser')
-
     all_dogs = soup.find_all('div', {'data-ohssb-type': 'dog'})
 
     for dog in all_dogs:
@@ -72,12 +71,10 @@ def get_puppies(url, puppy_dict):
             'detail': detail
         }
 
-    # print(puppy_dict)
-
     if new_puppies != {}:
         send(new_puppies)
     else:
-        print("No new puppies posted yet. :(")
+        print("No new puppies posted yet :(")
 
 
 def send(new_puppies):
@@ -92,17 +89,15 @@ def send(new_puppies):
     ・ ...
     """
     for (ident, puppy_info) in new_puppies.items():
-        message = f"{puppy_info['name']}\n{puppy_info['breed']}\n{puppy_info['age']}\n{puppy_info['detail']}"
+        message = (f"{puppy_info['name']}\n"
+                   f"{puppy_info['breed']}\n"
+                   f"{puppy_info['age']}\n"
+                   f"{puppy_info['detail']}")
 
         send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + \
             '/sendMessage?chat_id=' + CHAT_ID + '&parse_mode=Markdown&text=' + message
 
-        res = requests.get(send_text)
-        res.json()
-
-
-# def main():
-#     pass
+        requests.get(send_text)
 
 
 # Make sure to loop main and request every 1 or 2 minutes.
@@ -138,19 +133,6 @@ if __name__ == '__main__':
                 'detail': detail
             }
         # Initial state initialization ends here.
-
-        # dog_count = 0
-        # for (ident, puppy_info) in puppy_dict.items():
-        #     # print(
-        #     #     f"{puppy_info['name']}\n{puppy_info['breed']}\n{puppy_info['age']}\n{puppy_info['detail']}")
-        #     # print()
-        #     # dog_count += 1
-        #     message = f"{puppy_info['name']}\n{puppy_info['breed']}\n{puppy_info['age']}\n{puppy_info['detail']}"
-        #     send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + \
-        #         '/sendMessage?chat_id=' + CHAT_ID + '&parse_mode=Markdown&text=' + message
-        #     res = requests.get(send_text)
-        #     res.json()
-        # print(dog_count)
 
         count = 0
         while count != 30:
