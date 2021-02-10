@@ -97,7 +97,14 @@ def send(new_puppies):
         send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + \
             '/sendMessage?chat_id=' + CHAT_ID + '&parse_mode=Markdown&text=' + message
 
-        requests.get(send_text)
+        # Note that it can also be requests.get(send_text),
+        # but since I'm not needing to get any data from the
+        # api, I prefer to use post.
+        # If you are curious of the data, then you may want to
+        # do something like:
+        # res = requests.get(send_text)
+        # data = res.json()
+        requests.post(send_text)
 
 
 # Make sure to loop main and request every 1 or 2 minutes.
