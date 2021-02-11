@@ -83,13 +83,13 @@ def get_puppies(url, puppy_dict):
     current_time = datetime.now().strftime("%H:%M:%S")
     if new_puppies != {}:
         print(f"New doggy named {name} ({age} old) found!! {current_time}")
-        send(new_puppies)
+        send(new_puppies, current_time)
     else:
         print(f"No new puppies posted yet :( {current_time}")
         print("Currently available number of dogs: {}\n".format(len(puppy_dict)))
 
 
-def send(new_puppies):
+def send(new_puppies, current_time):
     """Sends puppies' data to your telegram chat.
 
     Message format
@@ -100,7 +100,6 @@ def send(new_puppies):
 
     ・ ...
     """
-    current_time = datetime.now().strftime("%H:%M:%S")
 
     for (ident, puppy_info) in new_puppies.items():
         message = (f"{puppy_info['name']}\n"
