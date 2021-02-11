@@ -1,6 +1,10 @@
+# Built in libraries:
+from datetime import datetime
+import time
+
+# Third part libraries:
 from bs4 import BeautifulSoup
 from decouple import config
-import time
 import requests
 
 
@@ -36,6 +40,8 @@ def get_puppies(url, puppy_dict):
     dict
         A dictionary of puppies' data: { puppy: [name, age, url], etc. }
     """
+
+    # Initialize new puppy list.
     new_puppies = {}
 
     res = requests.get(url)
@@ -49,13 +55,16 @@ def get_puppies(url, puppy_dict):
 
     for dog in all_dogs:
         ident = dog.find('span', class_='id').text
-        name = dog.find('span', class_='name').text
-        breed = dog.find('span', class_='breed').text
         age = dog.find('span', class_='age').text
-        detail = DETAIL + ident
-
+        # If the dog ID already exists in puppy_dict or the dog is older than 4 years,
+        # then continue with the next dod.
         if ident in puppy_dict or int(age.split(' ', 1)[0]) > 4:
             continue
+
+        # If new ID found, then do the following:
+        name = dog.find('span', class_='name').text
+        breed = dog.find('span', class_='breed').text
+        detail = DETAIL + ident
 
         new_puppies[ident] = {
             'name': name,
@@ -71,10 +80,13 @@ def get_puppies(url, puppy_dict):
             'detail': detail
         }
 
+    current_time = datetime.now().strftime("%H:%M:%S")
     if new_puppies != {}:
+        print(f"New doggy named {name} ({age} old) found!! {current_time}")
         send(new_puppies)
     else:
-        print("No new puppies posted yet :(")
+        print(f"No new puppies posted yet :( {current_time}")
+        print("Currently available number of dogs: {}\n".format(len(puppy_dict)))
 
 
 def send(new_puppies):
@@ -88,11 +100,14 @@ def send(new_puppies):
 
     ・ ...
     """
+    current_time = datetime.now().strftime("%H:%M:%S")
+
     for (ident, puppy_info) in new_puppies.items():
         message = (f"{puppy_info['name']}\n"
                    f"{puppy_info['breed']}\n"
                    f"{puppy_info['age']}\n"
-                   f"{puppy_info['detail']}")
+                   f"{puppy_info['detail']}"
+                   f"{current_time}")
 
         send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + \
             '/sendMessage?chat_id=' + CHAT_ID + '&parse_mode=Markdown&text=' + message
@@ -124,14 +139,14 @@ if __name__ == '__main__':
         all_dogs = soup.find_all('div', {'data-ohssb-type': 'dog'})
 
         for dog in all_dogs:
+            age = dog.find('span', class_='age').text
+            if int(age.split(' ', 1)[0]) > 4:
+                continue
+
             ident = dog.find('span', class_='id').text
             name = dog.find('span', class_='name').text
             breed = dog.find('span', class_='breed').text
-            age = dog.find('span', class_='age').text
             detail = DETAIL + ident
-
-            if int(age.split(' ', 1)[0]) > 4:
-                continue
 
             puppy_dict[ident] = {
                 'name': name,
@@ -141,8 +156,11 @@ if __name__ == '__main__':
             }
         # Initial state initialization ends here.
 
+        # print(puppy_dict)
+        print("Current number of available dogs: {}\n".format(len(puppy_dict)))
+
         count = 0
-        while count != 30:
+        while count != 60:
+            time.sleep(30)
             get_puppies(URL, puppy_dict)
             count += 1
-            time.sleep(30)
