@@ -105,7 +105,7 @@ def send(new_puppies, current_time):
         message = (f"{puppy_info['name']}\n"
                    f"{puppy_info['breed']}\n"
                    f"{puppy_info['age']}\n"
-                   f"{puppy_info['detail']}"
+                   f"{puppy_info['detail']}\n"
                    f"{current_time}")
 
         send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + \
