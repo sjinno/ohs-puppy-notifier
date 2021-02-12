@@ -14,15 +14,31 @@ import requests
 TELEGRAM_TOKEN = config('TELEGRAM_TOKEN')
 CHAT_ID = config('CHAT_ID')
 
+EXCEPTIONS = ["American", "Pit", "Bull", "Terrier", "Chihuahua"]
+
 
 # CONSTANTS:
 URL = "https://www.oregonhumane.org/adopt/?type=dogs"
 DETAIL = "https://www.oregonhumane.org/adopt/details/"
 
 
+class Dog:
+    def __init__(self, name, breed, age, detail):
+        self.name = name
+        self.breed = breed
+        self.age = age
+        self.detail = detail
+
+    def __repr__(self):
+        return (f"{self.name}\n"
+                f"{self.breed}\n"
+                f"{self.age}\n"
+                f"{self.detail}")
+
+
 # First, make sure that the URL returns 200 with try block.
 # Otherwise, notify the bad request and exit the program.
-def get_puppies(url, puppy_dict):
+def get_puppies(puppy_dict):
     """
     Gets puppies' data from OHS websie and create a new dictionary aside from `puppy_dict`
     so that we don't sned redundant puppies to telegram.
@@ -44,7 +60,7 @@ def get_puppies(url, puppy_dict):
     # Initialize new puppy list.
     new_puppies = {}
 
-    res = requests.get(url)
+    res = requests.get(URL)
     if res.status_code != 200:
         print(f"{res.status_code}: Bad request!")
         print("Exiting the program...")
@@ -61,24 +77,22 @@ def get_puppies(url, puppy_dict):
         if ident in puppy_dict or int(age.split(' ', 1)[0]) > 4:
             continue
 
+        breed = dog.find('span', class_='breed').text
+        split_breed = breed.split(' ')
+        ignore = False
+        for b in split_breed:
+            if b in EXCEPTIONS:
+                ignore = True
+                break
+        if ignore:
+            continue
+
         # If new ID found, then do the following:
         name = dog.find('span', class_='name').text
-        breed = dog.find('span', class_='breed').text
         detail = DETAIL + ident
 
-        new_puppies[ident] = {
-            'name': name,
-            'breed': breed,
-            'age': age,
-            'detail': detail
-        }
-
-        puppy_dict[ident] = {
-            'name': name,
-            'breed': breed,
-            'age': age,
-            'detail': detail
-        }
+        new_puppies[ident] = Dog(name, breed, age, detail)
+        puppy_dict[ident] = Dog(name, breed, age, detail)
 
     current_time = datetime.now().strftime("%H:%M:%S")
     if new_puppies != {}:
@@ -86,7 +100,7 @@ def get_puppies(url, puppy_dict):
         send(new_puppies, current_time)
     else:
         print(f"No new puppies posted yet :( {current_time}")
-        print("Currently available number of dogs: {}\n".format(len(puppy_dict)))
+        # print("Currently available number of dogs: {}".format(len(puppy_dict)))
 
 
 def send(new_puppies, current_time):
@@ -142,20 +156,28 @@ if __name__ == '__main__':
             if int(age.split(' ', 1)[0]) > 4:
                 continue
 
+            breed = dog.find('span', class_='breed').text
+            split_breed = breed.split(' ')
+            ignore = False
+            for b in split_breed:
+                if b in EXCEPTIONS:
+                    ignore = True
+                    break
+            if ignore:
+                continue
+
             ident = dog.find('span', class_='id').text
             name = dog.find('span', class_='name').text
-            breed = dog.find('span', class_='breed').text
+            # breed = dog.find('span', class_='breed').text
             detail = DETAIL + ident
 
-            puppy_dict[ident] = {
-                'name': name,
-                'breed': breed,
-                'age': age,
-                'detail': detail
-            }
+            puppy_dict[ident] = Dog(name, breed, age, detail)
         # Initial state initialization ends here.
 
-        # print(puppy_dict)
+        for k, v in puppy_dict.items():
+            print(k)
+            print(v)
+            print()
         print("Current number of available dogs: {}\n".format(len(puppy_dict)))
 
         count = 0
