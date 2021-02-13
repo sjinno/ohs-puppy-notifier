@@ -183,5 +183,5 @@ if __name__ == '__main__':
         count = 0
         while count != 60:
             time.sleep(30)
-            get_puppies(URL, puppy_dict)
+            get_puppies(puppy_dict)
             count += 1
