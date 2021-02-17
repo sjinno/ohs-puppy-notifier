@@ -15,6 +15,8 @@ TELEGRAM_TOKEN = config('TELEGRAM_TOKEN')
 CHAT_ID = config('CHAT_ID')
 
 EXCEPTIONS = ["American", "Pit", "Bull", "Terrier", "Chihuahua"]
+NUMBER_OF_REQUESTS = 60
+INTERVAL = 30
 
 
 # CONSTANTS:
@@ -29,11 +31,11 @@ class Dog:
         self.age = age
         self.detail = detail
 
-    def __repr__(self):
+    def __str__(self):
         return (f"{self.name}\n"
                 f"{self.breed}\n"
                 f"{self.age}\n"
-                f"{self.detail}")
+                f"{self.detail}\n")
 
 
 # First, make sure that the URL returns 200 with try block.
@@ -116,11 +118,7 @@ def send(new_puppies, current_time):
     """
 
     for (ident, puppy_info) in new_puppies.items():
-        message = (f"{puppy_info['name']}\n"
-                   f"{puppy_info['breed']}\n"
-                   f"{puppy_info['age']}\n"
-                   f"{puppy_info['detail']}\n"
-                   f"{current_time}")
+        message = f"{puppy_info}" + f"{current_time}"
 
         send_text = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN + \
             '/sendMessage?chat_id=' + CHAT_ID + '&parse_mode=Markdown&text=' + message
@@ -139,7 +137,6 @@ def send(new_puppies, current_time):
 # Increase count by 1 every loop and when the count is 60,
 # exit the loop and quit the program.
 if __name__ == '__main__':
-    # Initialize initial state.
     puppy_dict = {}
     res = requests.get(URL)
     Ok = True
@@ -151,6 +148,7 @@ if __name__ == '__main__':
         soup = BeautifulSoup(res.content, 'html.parser')
         all_dogs = soup.find_all('div', {'data-ohssb-type': 'dog'})
 
+        # Initialize initial state.
         for dog in all_dogs:
             age = dog.find('span', class_='age').text
             if int(age.split(' ', 1)[0]) > 4:
@@ -181,7 +179,7 @@ if __name__ == '__main__':
         print("Current number of available dogs: {}\n".format(len(puppy_dict)))
 
         count = 0
-        while count != 60:
-            time.sleep(30)
+        while count != NUMBER_OF_REQUESTS:
+            time.sleep(INTERVAL)
             get_puppies(puppy_dict)
             count += 1
